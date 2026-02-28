@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_
@@ -37,11 +37,11 @@ class LogbookService:
             stmt = stmt.where(and_(*conditions))
 
         stmt = (
-            stmt.order_by(LogEntry.day.desc(), LogEntry.start_time.desc(), LogEntry.id.desc())
+            stmt.order_by(LogEntry.id.desc())
             .limit(limit)
             .offset(offset)
         )
-
+    
         return list(self.db.scalars(stmt))
 
     def get_entry(self, entry_id: int) -> LogEntry:
@@ -68,3 +68,16 @@ class LogbookService:
         entry = self.get_entry(entry_id)
         self.db.delete(entry)
         self.db.commit()
+
+    def calc_duration_minutes(self, start_time, end_time) -> int:
+        start = datetime.combine(date.today(), start_time)
+        end = datetime.combine(date.today(), end_time)
+        return int((end - start).total_seconds() / 60)
+    
+    def get_last_entry(self) -> LogEntry | None:
+        stmt = (
+        select(LogEntry)
+        .order_by(LogEntry.id.desc())
+        .limit(1)
+    )
+        return self.db.scalar(stmt)

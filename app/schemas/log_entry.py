@@ -1,6 +1,6 @@
 from datetime import date, time
 from pydantic import BaseModel, Field, ConfigDict
-
+from datetime import datetime
 
 class LogEntryBase(BaseModel):
     day: date
@@ -35,4 +35,6 @@ class LogEntryUpdate(BaseModel):
 
 class LogEntryRead(LogEntryBase):
     model_config = ConfigDict(from_attributes=True)
+
     id: int
+    duration_minutes: int | None = None

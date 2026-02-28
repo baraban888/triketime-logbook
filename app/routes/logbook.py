@@ -1,7 +1,6 @@
 from datetime import date
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-
 from app.db.session import get_db
 from app.schemas.log_entry import (
     LogEntryCreate,
@@ -25,18 +24,11 @@ def create_entry(payload: LogEntryCreate, db: Session = Depends(get_db)):
     service = LogbookService(db)
     return service.create_entry(payload)
 
+@router.get("/last", response_model=LogEntryRead | None)
+def get_last_entry(db: Session = Depends(get_db)):
+    service = LogbookService(db)
+    return service.get_last_entry()
 
-@router.get(
-    "/entries",
-    response_model=list[LogEntryRead],
-)
-def list_entries(
-    db: Session = Depends(get_db),
-    day_from: date | None = Query(default=None, description="Filter: from date (inclusive)"),
-    day_to: date | None = Query(default=None, description="Filter: to date (inclusive)"),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-):
     """
     List log entries with optional date filters + pagination.
     Examples:
